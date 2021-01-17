@@ -2,9 +2,6 @@ name: Docker Publish
 
 on: [push]
 
-env:
-  IMAGE_NAME: youtube-dl
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -12,8 +9,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run tests
-        run: docker build - < Dockerfile
+      - name: Set IMAGE_ID environment variable
+        run: echo "IMAGE_ID=ghcr.io/${{ github.repository_owner }}/youtube-dl:${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Build Image
+        run: docker build --tag $IMAGE_ID - < Dockerfile
+
+      - name: Log into registry
+        run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+      - name: Push image
+        run: docker push $IMAGE_ID
 
   push:
     needs: test
@@ -22,18 +28,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build image
-        run: docker build --tag $IMAGE_NAME - < Dockerfile
-
       - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+        run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
-      - name: Push image
+      - name: Publish image
         run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/youtube-dl
 
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
@@ -47,5 +47,6 @@ jobs:
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
 
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker pull $IMAGE_ID:${{ github.sha }}
+          docker tag $IMAGE_ID:${{ github.sha }} $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
