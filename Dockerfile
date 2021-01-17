@@ -22,3 +22,7 @@ RUN set -eux; \
   && cmake --build . --config Release \
   && install AtomicParsley /usr/local/bin/AtomicParsley \
   && apk del .buildDeps
+
+WORKDIR /app
+ENTRYPOINT ["youtube-dl"]
+CMD ["--help"]

@@ -12,8 +12,11 @@ jobs:
       - name: Set IMAGE_ID environment variable
         run: echo "IMAGE_ID=ghcr.io/${{ github.repository_owner }}/youtube-dl:${{ github.sha }}" >> $GITHUB_ENV
 
-      - name: Build Image
+      - name: Build image
         run: docker build --tag $IMAGE_ID - < Dockerfile
+
+      - name: Test
+        run: ./test.sh
 
       - name: Log into registry
         run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
