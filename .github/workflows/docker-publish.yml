@@ -44,7 +44,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           load: ${{ matrix.platform == 'linux/amd64' }}
           platforms: ${{ matrix.platform }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: latest,${{ steps.meta.outputs.tags }}
 
       - name: Test
         if: matrix.platform == 'linux/amd64'
