@@ -27,19 +27,24 @@ jobs:
         with:
           install: true
 
+      - name: Set up tags and labels
+        id: meta
+        uses: crazy-max/ghaction-docker-meta@v1
+        with:
+          images: youtube-dl
+          tag-semver: |
+            {{major}}.{{minor}}.{{patch}}
+            {{major}}.{{minor}}
+            {{major}}
+          tag-sha: true
+
       - name: Multi-arch build
         uses: docker/build-push-action@v2
         with:
+          labels: ${{ steps.meta.outputs.labels }}
+          load: ${{ matrix.platform == 'linux/amd64' }}
           platforms: ${{ matrix.platform }}
-          tags: youtube-dl:latest
-
-      - name: Load image
-        if: matrix.platform == 'linux/amd64'
-        uses: docker/build-push-action@v2
-        with:
-          platforms: linux/amd64
-          load: true
-          tags: youtube-dl:latest
+          tags: ${{ steps.meta.outputs.tags }}
 
       - name: Test
         if: matrix.platform == 'linux/amd64'
@@ -73,14 +78,23 @@ jobs:
         with:
           install: true
 
-      - id: docker-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@v1
+      - name: Set up tags and labels
+        id: meta
+        uses: crazy-max/ghaction-docker-meta@v1
+        with:
+          images: |
+            djbender/youtube-dl
+            ghcr.io/djbender/youtube-dl
+          tag-semver: |
+            {{major}}.{{minor}}.{{patch}}
+            {{major}}.{{minor}}
+            {{major}}
+          tag-sha: true
 
       - name: Multi-arch build
         uses: docker/build-push-action@v2
         with:
           platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
           push: true
-          tags: |
-            djbender/youtube-dl:${{ steps.docker-tag.outputs.tag }}
-            ghcr.io/djbender/youtube-dl:${{ steps.docker-tag.outputs.tag }}
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
