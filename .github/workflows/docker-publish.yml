@@ -5,6 +5,15 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      platform:
+        - linux/386
+        - linux/amd64
+        - linux/arm/v6
+        - linux/arm/v7
+        - linux/arm64
+        - linux/ppc64le
+        - linux/s390x
     steps:
       - uses: actions/checkout@v2
 
@@ -20,10 +29,11 @@ jobs:
       - name: Multi-arch build
         uses: docker/build-push-action@v2
         with:
-          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
+          platforms: ${{ matrix.platform }}
           tags: youtube-dl:latest
 
       - name: Load image
+        if: ${{ matrix.platform }} == 'linux/amd64'
         uses: docker/build-push-action@v2
         with:
           platforms: linux/amd64
@@ -31,6 +41,7 @@ jobs:
           tags: youtube-dl:latest
 
       - name: Test
+        if: ${{ matrix.platform }} == 'linux/amd64'
         run: ./test.sh
 
   push:
