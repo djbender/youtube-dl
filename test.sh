@@ -2,7 +2,7 @@
 
 set -eux
 
-docker run "${IMAGE_ID:-ghcr.io/djbender/youtube-dl}" \
+docker run "${IMAGE_ID:-youtube-dl}" \
   -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' \
   --add-metadata \
   --all-subs \
