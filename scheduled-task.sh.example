@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -eux -o pipefail
+
+# NOTE: all files and paths listed in the volume sources must already exist
+docker run --rm \
+  --volume /volume1/SomeShare/youtube:/destination \
+  --volume /volume1/SomeShare/youtube/archive.txt:/app/archive.txt \
+  --volume /volume1/docker/youtube-dl/download-list.txt:/app/download-list.txt:ro \
+  --volume /volume1/docker/youtube-dl/1080.config:/app/1080.config:ro \
+  djbender/youtube-dl:${YOUTUBE_DL_VERSION:-latest} \
+    --config-location ./1080.config
+
+# docker run --rm djbender/youtube-dl:${YOUTUBE_DL_VERSION:-latest} \
+#  --config-location ./uhd.config
