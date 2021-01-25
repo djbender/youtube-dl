@@ -18,6 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -41,6 +48,7 @@ jobs:
       - name: Multi-arch build
         uses: docker/build-push-action@v2
         with:
+          cache-from: type=registry,ref=ghcr.io/djbender/youtube-dl:latest
           labels: ${{ steps.meta.outputs.labels }}
           load: ${{ matrix.platform == 'linux/amd64' }}
           platforms: ${{ matrix.platform }}
@@ -97,6 +105,8 @@ jobs:
       - name: Multi-arch build
         uses: docker/build-push-action@v2
         with:
+          cache-from: type=registry,ref=ghcr.io/djbender/youtube-dl:latest
+          cache-to: type=inline
           platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
           push: true
           labels: ${{ steps.meta.outputs.labels }}
